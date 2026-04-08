@@ -1,0 +1,28 @@
+name: Build and Push to ACR
+
+on:
+  push:
+    branches: ["main"] # This triggers the action every time you push to 'main'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Login to ACR
+        run: |
+          # We use the name we created earlier
+          az acr login --name acrdevopsprojectps5iu
+
+      - name: Build and Push Docker Image
+        run: |
+          # Build from the /app directory
+          docker build -t acrdevopsprojectps5iu.azurecr.io/monitor-app:${{ github.sha }} ./app
+          docker push acrdevopsprojectps5iu.azurecr.io/monitor-app:${{ github.sha }}
